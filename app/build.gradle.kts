@@ -48,6 +48,14 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    // Retrofit & OkHttp
+    implementation(libs.retrofit)
+    implementation(libs.logging.interceptor)
+
+    // Kotlinx Serialization for JSON parsing
+    implementation(libs.kotlinx.serialization.json)
+    // Retrofit adapter for Kotlinx Serialization
+    implementation(libs.converter.kotlinx.serialization)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
