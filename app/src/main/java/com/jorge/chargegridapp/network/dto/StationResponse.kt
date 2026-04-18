@@ -1,5 +1,8 @@
 package com.jorge.chargegridapp.network.dto
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class StationResponse(
     val id: Long,
     val name: String,
