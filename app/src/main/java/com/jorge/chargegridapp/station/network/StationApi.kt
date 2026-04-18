@@ -10,7 +10,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 
-private const val BASE_URL = "/api/stations"
+private const val BASE_URL = "api/stations"
 
 interface StationApi {
 
