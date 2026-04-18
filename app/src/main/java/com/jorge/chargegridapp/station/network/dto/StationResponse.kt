@@ -1,4 +1,4 @@
-package com.jorge.chargegridapp.network.dto
+package com.jorge.chargegridapp.station.network.dto
 
 import kotlinx.serialization.Serializable
 
