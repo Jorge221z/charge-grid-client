@@ -7,7 +7,7 @@ import com.jorge.chargegridapp.station.network.dto.StationResponse
 import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
 
 
-// The UI will call these methods to get the data
+// The ViewModel will call these methods to get the data
 class StationRepository(private val stationApi: StationApi) {
 
     suspend fun fetchAllStations(): Result<List<StationResponse>> {

@@ -25,10 +25,10 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
 
     init {
         // Fetch data immediately when the ViewModel is created
-        fetchStations()
+        fetchAllStations()
     }
 
-    private fun fetchStations() {
+    private fun fetchAllStations() {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
