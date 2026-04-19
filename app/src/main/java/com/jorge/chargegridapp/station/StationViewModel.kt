@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
 import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
 import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
+import kotlinx.coroutines.flow.update
 
 import kotlinx.coroutines.launch
 
@@ -42,11 +43,13 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
             val result = repository.fetchAllStations()
 
             result.onSuccess { stations ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    stations = stations,
-                    errorMessage = null
-                )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        stations = stations,
+                        errorMessage = null
+                    )
+                }
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
@@ -63,11 +66,13 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
             val result = repository.fetchStationDetail(id)
 
             result.onSuccess { detail ->
-                _uiState.value = _uiState.value.copy(
-                    isFetchingDetail = false,
-                    stationDetail = detail,
-                    errorMessage = null
-                )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isFetchingDetail = false,
+                        stationDetail = detail,
+                        errorMessage = null
+                    )
+                }
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isFetchingDetail = false,
@@ -83,11 +88,13 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
 
             result.onSuccess { newStation ->
                 val updatedStations = _uiState.value.stations + newStation
-                _uiState.value = _uiState.value.copy(
-                    stationCreatedSuccessfully = true,
-                    stations = updatedStations,
-                    errorMessage = null
-                )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        stationCreatedSuccessfully = true,
+                        stations = updatedStations,
+                        errorMessage = null
+                    )
+                }
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     errorMessage = error.message ?: "Unknown error"
@@ -108,10 +115,12 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
                 val updatedStations = _uiState.value.stations.map { station ->
                     if (station.id == id) updatedStation else station
                 }
-                _uiState.value = _uiState.value.copy(
-                    stations = updatedStations,
-                    errorMessage = null
-                )
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        stations = updatedStations,
+                        errorMessage = null
+                    )
+                }
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     errorMessage = error.message ?: "Unknown error"
