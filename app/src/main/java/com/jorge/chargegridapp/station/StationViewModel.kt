@@ -6,6 +6,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
+import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
+import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
 
 import kotlinx.coroutines.launch
 
@@ -14,7 +17,11 @@ import kotlinx.coroutines.launch
 data class StationUiState(
     val isLoading: Boolean = false,
     val stations: List<StationResponse> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+
+    val stationDetail: StationDetailResponse? = null,
+    val isFetchingDetail: Boolean = false,
+    val stationCreatedSuccessfully: Boolean = false
 )
 
 
@@ -43,6 +50,70 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
+                    errorMessage = error.message ?: "Unknown error"
+                )
+            }
+        }
+    }
+
+    fun fetchStationDetail(id: Long) {
+        _uiState.value = _uiState.value.copy(isFetchingDetail = true)
+
+        viewModelScope.launch {
+            val result = repository.fetchStationDetail(id)
+
+            result.onSuccess { detail ->
+                _uiState.value = _uiState.value.copy(
+                    isFetchingDetail = false,
+                    stationDetail = detail,
+                    errorMessage = null
+                )
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    isFetchingDetail = false,
+                    errorMessage = error.message ?: "Unknown error"
+                )
+            }
+        }
+    }
+
+    fun createStation(request: StationCreateRequest) {
+        viewModelScope.launch {
+            val result = repository.createStation(request)
+
+            result.onSuccess { newStation ->
+                val updatedStations = _uiState.value.stations + newStation
+                _uiState.value = _uiState.value.copy(
+                    stationCreatedSuccessfully = true,
+                    stations = updatedStations,
+                    errorMessage = null
+                )
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = error.message ?: "Unknown error"
+                )
+            }
+        }
+    }
+
+    fun resetStationCreatedFlag() {
+        _uiState.value = _uiState.value.copy(stationCreatedSuccessfully = false)
+    }
+
+    fun updateStationStatus(id: Long, request: StationStatusUpdateRequest) {
+        viewModelScope.launch {
+            val result = repository.updateStationStatus(id, request)
+
+            result.onSuccess { updatedStation ->
+                val updatedStations = _uiState.value.stations.map { station ->
+                    if (station.id == id) updatedStation else station
+                }
+                _uiState.value = _uiState.value.copy(
+                    stations = updatedStations,
+                    errorMessage = null
+                )
+            }.onFailure { error ->
+                _uiState.value = _uiState.value.copy(
                     errorMessage = error.message ?: "Unknown error"
                 )
             }
