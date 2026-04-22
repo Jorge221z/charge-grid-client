@@ -4,13 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jorge.chargegridapp.core.network.RetrofitClient
+import com.jorge.chargegridapp.station.StationRepository
+import com.jorge.chargegridapp.station.StationViewModel
+import com.jorge.chargegridapp.station.ui.StationListScreen
 import com.jorge.chargegridapp.ui.theme.ChargeGridTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,29 +19,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ChargeGridTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+                val factory = object: ViewModelProvider.Factory {
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        val api = RetrofitClient.stationApi
+                        val repository = StationRepository(api)
+                        @Suppress("UNCHECKED_CAST")
+                        return StationViewModel(repository) as T
+                    }
                 }
+
+                StationListScreen(
+                    viewModel = viewModel(factory = factory)
+                )
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ChargeGridTheme {
-        Greeting("Android")
     }
 }
