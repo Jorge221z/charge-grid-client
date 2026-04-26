@@ -1,10 +1,13 @@
 package com.jorge.chargegridapp.station.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -12,6 +15,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -93,21 +98,39 @@ fun StationDetailContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(text = "Station Details", style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "ID: ${detail.id}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Name: ${detail.name}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Status: ${detail.status.name}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Max Power: ${detail.maxPower}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Latitude: ${detail.latitude}", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Longitude: ${detail.longitude}", style = MaterialTheme.typography.bodyLarge)
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(text = "Charge Sessions Nº: ${detail.recentSessions.count()}", style = MaterialTheme.typography.bodyLarge)
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
 
+            DetailRow(label = "ID", value = detail.id.toString())
+            DetailRow(label = "Name", value = detail.name)
+            DetailRow(label = "Status", value = detail.status.name)
+            DetailRow(label = "Max Power", value = "${detail.maxPower} kW")
+            DetailRow(label = "Coordinates", value = "${detail.latitude}, ${detail.longitude}")
         }
+    }
+}
+
+@Composable
+fun DetailRow(label: String, value: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp), // Same as Spacer
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
