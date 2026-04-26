@@ -10,7 +10,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jorge.chargegridapp.core.network.RetrofitClient
 import com.jorge.chargegridapp.station.StationRepository
 import com.jorge.chargegridapp.station.StationViewModel
-import com.jorge.chargegridapp.station.ui.StationListScreen
+import com.jorge.chargegridapp.station.ui.StationScreen
 import com.jorge.chargegridapp.ui.theme.ChargeGridTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
-                StationListScreen(
+                StationScreen(
                     viewModel = viewModel(factory = factory)
                 )
             }

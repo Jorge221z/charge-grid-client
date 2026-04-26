@@ -107,6 +107,10 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
         _uiState.value = _uiState.value.copy(stationCreatedSuccessfully = false)
     }
 
+    fun clearStationDetail() {
+        _uiState.value = _uiState.value.copy(stationDetail = null)
+    }
+
     fun updateStationStatus(id: Long, request: StationStatusUpdateRequest) {
         viewModelScope.launch {
             val result = repository.updateStationStatus(id, request)
