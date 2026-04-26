@@ -41,7 +41,9 @@ fun StationScreen(
         StationListContent(
             stations = state.stations,
             isLoading = state.isLoading || state.isFetchingDetail,
-            onStationClick = { id -> viewModel.fetchStationDetail(id) }
+            errorMessage = state.errorMessage,
+            onStationClick = { id -> viewModel.fetchStationDetail(id) },
+            onRetryClick = { viewModel.fetchAllStations() }
         )
     } else {
         StationDetailContent(
@@ -55,13 +57,31 @@ fun StationScreen(
 fun StationListContent(
     stations: List<StationResponse>,
     isLoading: Boolean,
-    onStationClick: (Long) -> Unit // Callback
+    errorMessage: String? = null,
+    onStationClick: (Long) -> Unit, // Callback
+    onRetryClick: () -> Unit // Retry callback in case of error
 ) {
     Scaffold { paddingValues ->
-        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
 
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+
+            } else if (errorMessage != null) {
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "Error: $errorMessage", color = MaterialTheme.colorScheme.error)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(onClick = onRetryClick) {
+                        Text("Retry")
+                    }
+                }
             }
 
             LazyColumn(

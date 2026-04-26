@@ -36,7 +36,7 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
         fetchAllStations()
     }
 
-    private fun fetchAllStations() {
+    fun fetchAllStations() {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
