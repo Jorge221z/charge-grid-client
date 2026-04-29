@@ -90,13 +90,18 @@ fun StationListContent(
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
 
-            if (isLoading) {
+                if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
 
             } else if (errorMessage != null) {
@@ -122,13 +127,20 @@ fun StationListContent(
                         onClick = { onStationClick(station.id) }
                     )
                 }
+            } // closes LazyColumn
+            } // closes Box
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(
+                onClick = { showDialog = true },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 16.dp)
+            ) {
+                Text("Create New Station")
             }
-        }
-    }
-    Spacer(modifier = Modifier.height(20.dp))
-    Button(onClick = { showDialog = true}) {
-        Text("Create New Station")
-    }
+        } // closes Column
+    } // closes Scaffold
+
     if (showDialog) {
         CreateStationDialog(
             onSubmit = { request ->
