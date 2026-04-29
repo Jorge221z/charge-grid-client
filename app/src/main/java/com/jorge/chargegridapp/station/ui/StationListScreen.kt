@@ -1,5 +1,6 @@
 package com.jorge.chargegridapp.station.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,11 @@ fun StationScreen(
     viewModel: StationViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+
+    // Interceptor for physical Android back button
+    BackHandler(enabled = state.stationDetail != null) {
+        viewModel.clearStationDetail()
+    }
 
     if (state.stationDetail == null) {
         StationListContent(
