@@ -19,18 +19,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ChargeGridTheme {
-
-                val factory = object: ViewModelProvider.Factory {
-                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                        val api = RetrofitClient.stationApi
-                        val repository = StationRepository(api)
-                        @Suppress("UNCHECKED_CAST")
-                        return StationViewModel(repository) as T
-                    }
-                }
-
                 StationScreen(
-                    viewModel = viewModel(factory = factory)
+                    viewModel = viewModel(factory = StationViewModel.Factory)
                 )
             }
         }

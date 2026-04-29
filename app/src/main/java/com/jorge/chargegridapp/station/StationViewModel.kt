@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.jorge.chargegridapp.core.network.RetrofitClient
 import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
 import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
 import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
@@ -133,4 +135,15 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
         }
     }
 
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val api = RetrofitClient.stationApi
+                val repository = StationRepository(api)
+                return StationViewModel(repository) as T
+            }
+        }
+    }
 }
+
