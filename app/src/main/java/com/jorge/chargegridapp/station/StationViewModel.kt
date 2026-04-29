@@ -126,6 +126,9 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
                         stations = updatedStations,
                         errorMessage = null
                     )
+                } // UI update for station status
+                if (_uiState.value.stationDetail?.id == id) {
+                    fetchStationDetail(id)
                 }
             }.onFailure { error ->
                 _uiState.value = _uiState.value.copy(

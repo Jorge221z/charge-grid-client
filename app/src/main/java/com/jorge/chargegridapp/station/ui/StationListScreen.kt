@@ -1,5 +1,6 @@
 package com.jorge.chargegridapp.station.ui
 
+import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -21,16 +23,24 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jorge.chargegridapp.station.StationViewModel
+import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
 import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
 import com.jorge.chargegridapp.station.network.dto.StationResponse
+import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
+import com.jorge.chargegridapp.station.network.dto.Status
 
 @Composable
 fun StationScreen(
@@ -49,12 +59,21 @@ fun StationScreen(
             isLoading = state.isLoading || state.isFetchingDetail,
             errorMessage = state.errorMessage,
             onStationClick = { id -> viewModel.fetchStationDetail(id) },
-            onRetryClick = { viewModel.fetchAllStations() }
+            onRetryClick = { viewModel.fetchAllStations() },
+            onCreateSubmit = { request -> viewModel.createStation(request) }
         )
     } else {
         StationDetailContent(
             detail = state.stationDetail!!,
-            onBackClick = { viewModel.clearStationDetail() }
+            onBackClick = { viewModel.clearStationDetail() },
+            onStatusUpdate = { newStatus ->
+                val request = StationStatusUpdateRequest(status = newStatus)
+
+                viewModel.updateStationStatus(
+                    id = state.stationDetail!!.id,
+                    request = request
+                )
+            }
         )
     }
 }
@@ -65,8 +84,11 @@ fun StationListContent(
     isLoading: Boolean,
     errorMessage: String? = null,
     onStationClick: (Long) -> Unit, // Callback
-    onRetryClick: () -> Unit // Retry callback in case of error
+    onRetryClick: () -> Unit, // Retry callback in case of error
+    onCreateSubmit: (StationCreateRequest) -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Scaffold { paddingValues ->
         Box(
             modifier = Modifier
@@ -103,12 +125,28 @@ fun StationListContent(
             }
         }
     }
+    Spacer(modifier = Modifier.height(20.dp))
+    Button(onClick = { showDialog = true}) {
+        Text("Create New Station")
+    }
+    if (showDialog) {
+        CreateStationDialog(
+            onSubmit = { request ->
+                onCreateSubmit(request)
+                showDialog = false
+            },
+            onDismiss = {
+                showDialog = false
+            }
+        )
+    }
 }
 
 @Composable
 fun StationDetailContent(
     detail: StationDetailResponse,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    onStatusUpdate: (Status) -> Unit
 ) {
     Scaffold { paddingValues ->
         Column(
@@ -135,6 +173,23 @@ fun StationDetailContent(
             DetailRow(label = "Status", value = detail.status.name)
             DetailRow(label = "Max Power", value = "${detail.maxPower} kW")
             DetailRow(label = "Coordinates", value = "${detail.latitude}, ${detail.longitude}")
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(text = "Update Status", style = MaterialTheme.typography.headlineSmall)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(onClick = { onStatusUpdate(Status.AVAILABLE) }) {
+                    Text("Available")
+                }
+                Button(onClick = { onStatusUpdate(Status.IN_USE) }) {
+                    Text("In Use")
+                }
+                Button(onClick = { onStatusUpdate(Status.MAINTENANCE) }) {
+                    Text("Under Maintenance")
+                }
+            }
         }
     }
 }
@@ -173,4 +228,65 @@ fun StationCard(name: String, status: String, onClick: () -> Unit) {
             Text(text = "Status: $status", style = MaterialTheme.typography.bodyMedium)
         }
     }
+}
+
+@Composable
+fun CreateStationDialog(onSubmit: (StationCreateRequest) -> Unit, onDismiss: () -> Unit) {
+    var name by remember { mutableStateOf("") }
+    var latitude by remember { mutableStateOf("") }
+    var longitude by remember { mutableStateOf("") }
+    var maxPower by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Create New Station") },
+        text = {
+            Column {
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Station Name") }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = latitude,
+                    onValueChange = { latitude = it },
+                    label = { Text("Latitude") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = longitude,
+                    onValueChange = { longitude = it },
+                    label = { Text("Longitude") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = maxPower,
+                    onValueChange = { maxPower = it },
+                    label = { Text("Max Power (kW)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                val request = StationCreateRequest(
+                    name = name,
+                    latitude = latitude.toDoubleOrNull() ?: 0.0,
+                    longitude = longitude.toDoubleOrNull() ?: 0.0,
+                    maxPower = maxPower.toDoubleOrNull() ?: 0.0,
+                )
+                onSubmit(request)
+            }) {
+                Text("Create")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
