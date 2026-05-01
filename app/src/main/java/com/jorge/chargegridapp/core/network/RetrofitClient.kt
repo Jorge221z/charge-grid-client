@@ -1,6 +1,7 @@
 package com.jorge.chargegridapp.core.network
 
 import com.jorge.chargegridapp.BuildConfig
+import com.jorge.chargegridapp.chargesession.network.ChargeSessionApi
 import com.jorge.chargegridapp.station.network.StationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
@@ -39,6 +40,10 @@ object RetrofitClient {
     // Expose API interfaces
     val stationApi: StationApi by lazy {
         retrofit.create(StationApi::class.java)
+    }
+
+    val chargeSessionApi: ChargeSessionApi by lazy {
+        retrofit.create(ChargeSessionApi::class.java)
     }
 
 }
