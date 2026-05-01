@@ -4,11 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.jorge.chargegridapp.core.network.RetrofitClient
-import com.jorge.chargegridapp.station.StationRepository
 import com.jorge.chargegridapp.station.StationViewModel
 import com.jorge.chargegridapp.station.ui.StationScreen
 import com.jorge.chargegridapp.ui.theme.ChargeGridTheme
