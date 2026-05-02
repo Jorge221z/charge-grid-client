@@ -69,9 +69,20 @@ class StationViewModel(private val repository: StationRepository): ViewModel() {
 
             result.onSuccess { detail ->
                 _uiState.update { currentState ->
+                    // Sync the list with the fresh detail data
+                    val updatedStations = currentState.stations.map { station ->
+                        if (station.id == detail.id) {
+                            station.copy(
+                                name = detail.name,
+                                status = detail.status,
+                                maxPower = detail.maxPower
+                            )
+                        } else station
+                    }
                     currentState.copy(
                         isFetchingDetail = false,
                         stationDetail = detail,
+                        stations = updatedStations,
                         errorMessage = null
                     )
                 }
