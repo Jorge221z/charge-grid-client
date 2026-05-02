@@ -27,6 +27,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +64,21 @@ fun StationScreen(
         viewModel.clearStationDetail()
     }
 
+    LaunchedEffect(sessionState.activeSession) {
+        state.stationDetail?.let { detail ->
+            viewModel.fetchStationDetail(detail.id)
+        }
+    }
+
+    // Refresh station detail after a session stops properly (loading finishes)
+    LaunchedEffect(sessionState.isLoading) {
+        if (!sessionState.isLoading && sessionState.errorMessage == null) {
+            state.stationDetail?.let { detail ->
+                viewModel.fetchStationDetail(detail.id)
+            }
+        }
+    }
+
     if (state.stationDetail == null) {
         StationListContent(
             stations = state.stations,
@@ -79,7 +95,7 @@ fun StationScreen(
             activeSession = sessionState.activeSession,
             isSessionLoading = sessionState.isLoading,
             onStartCharge = { request -> sessionViewModel.startSession(request) },
-            onStopCharge = { sessionViewModel.stopSession() },
+            onStopCharge = { sessionId -> sessionViewModel.stopSession(sessionId) },
 
             onBackClick = { viewModel.clearStationDetail() },
             onStatusUpdate = { newStatus ->
@@ -89,7 +105,8 @@ fun StationScreen(
                     id = state.stationDetail!!.id,
                     request = request
                 )
-            }
+            },
+            onRefreshStation = { viewModel.fetchStationDetail(state.stationDetail!!.id) }
         )
     }
 }
@@ -176,9 +193,10 @@ fun StationDetailContent(
     activeSession: ChargeSessionResponse?,
     isSessionLoading: Boolean,
     onStartCharge: (StartSessionRequest) -> Unit,
-    onStopCharge: () -> Unit,
+    onStopCharge: (Long) -> Unit,
     onBackClick: () -> Unit,
-    onStatusUpdate: (Status) -> Unit
+    onStatusUpdate: (Status) -> Unit,
+    onRefreshStation: (() -> Unit)? = null
 ) {
     Scaffold { paddingValues ->
         Column(
@@ -226,9 +244,12 @@ fun StationDetailContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            val inProgressSession = detail.recentSessions.find { it.endTime == null }
+            val isSessionActive = activeSession != null || inProgressSession != null
+
             if (isSessionLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
-            } else if (activeSession == null) {
+            } else if (!isSessionActive) {
                 Button(
                     onClick = { onStartCharge(StartSessionRequest(stationId = detail.id)) },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -237,15 +258,21 @@ fun StationDetailContent(
                 }
             } else {
                 Button(
-                    onClick = onStopCharge,
+                    onClick = {
+                        val idToStop = activeSession?.id ?: inProgressSession?.id
+                        if (idToStop != null) {
+                            onStopCharge(idToStop)
+                        }
+                    },
                     modifier = Modifier.align(Alignment.CenterHorizontally)
                 ) {
                     Text("Stop Charging Session")
                 }
 
                 // Avoid unnecessary CPU cycles
-                val formattedTime = remember(activeSession.startTime) {
-                    activeSession.startTime.formatToDisplay()
+                val startTime = activeSession?.startTime ?: inProgressSession?.startTime
+                val formattedTime = remember(startTime) {
+                    startTime?.formatToDisplay() ?: ""
                 }
                 Text("Session Started At: $formattedTime", style = MaterialTheme.typography.bodyMedium)
             }
@@ -329,6 +356,11 @@ fun CreateStationDialog(onSubmit: (StationCreateRequest) -> Unit, onDismiss: () 
     var longitude by remember { mutableStateOf("") }
     var maxPower by remember { mutableStateOf("") }
 
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var latError by remember { mutableStateOf<String?>(null) }
+    var lonError by remember { mutableStateOf<String?>(null) }
+    var powerError by remember { mutableStateOf<String?>(null) }
+
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Create New Station") },
@@ -336,41 +368,76 @@ fun CreateStationDialog(onSubmit: (StationCreateRequest) -> Unit, onDismiss: () 
             Column {
                 TextField(
                     value = name,
-                    onValueChange = { name = it },
-                    label = { Text("Station Name") }
+                    onValueChange = { name = it; nameError = null },
+                    label = { Text("Station Name") },
+                    isError = nameError != null,
+                    supportingText = { nameError?.let { Text(it) } }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = latitude,
-                    onValueChange = { latitude = it },
+                    onValueChange = { latitude = it; latError = null },
                     label = { Text("Latitude") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = latError != null,
+                    supportingText = { latError?.let { Text(it) } }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = longitude,
-                    onValueChange = { longitude = it },
+                    onValueChange = { longitude = it; lonError = null },
                     label = { Text("Longitude") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = lonError != null,
+                    supportingText = { lonError?.let { Text(it) } }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 TextField(
                     value = maxPower,
-                    onValueChange = { maxPower = it },
+                    onValueChange = { maxPower = it; powerError = null },
                     label = { Text("Max Power (kW)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    isError = powerError != null,
+                    supportingText = { powerError?.let { Text(it) } }
                 )
             }
         },
         confirmButton = {
             Button(onClick = {
-                val request = StationCreateRequest(
-                    name = name,
-                    latitude = latitude.toDoubleOrNull() ?: 0.0,
-                    longitude = longitude.toDoubleOrNull() ?: 0.0,
-                    maxPower = maxPower.toDoubleOrNull() ?: 0.0,
-                )
-                onSubmit(request)
+                var isValid = true
+
+                if (name.isBlank()) {
+                    nameError = "Name cannot be empty"
+                    isValid = false
+                }
+
+                val latNum = latitude.toDoubleOrNull()
+                if (latNum == null || latNum !in -90.0..90.0) {
+                    latError = "Valid latitude is between -90 and 90"
+                    isValid = false
+                }
+
+                val lonNum = longitude.toDoubleOrNull()
+                if (lonNum == null || lonNum !in -180.0..180.0) {
+                    lonError = "Valid longitude is between -180 and 180"
+                    isValid = false
+                }
+
+                val powerNum = maxPower.toDoubleOrNull()
+                if (powerNum == null || powerNum <= 0) {
+                    powerError = "Power must be greater than 0"
+                    isValid = false
+                }
+
+                if (isValid) {
+                    val request = StationCreateRequest(
+                        name = name,
+                        latitude = latNum!!,
+                        longitude = lonNum!!,
+                        maxPower = powerNum!!
+                    )
+                    onSubmit(request)
+                }
             }) {
                 Text("Create")
             }

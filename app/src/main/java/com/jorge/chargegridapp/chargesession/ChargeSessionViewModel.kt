@@ -47,11 +47,8 @@ class ChargeSessionViewModel(private val repository: ChargeSessionRepository): V
         }
     }
 
-    // No param needed since we will stop the active session
-    fun stopSession() {
-        //Check if the session is currently active
-        val sessionId = _uiState.value.activeSession?.id ?: return
-
+    // Pass the sessionId to stop the session(hot reload)
+    fun stopSession(sessionId: Long) {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
         viewModelScope.launch {
@@ -72,7 +69,6 @@ class ChargeSessionViewModel(private val repository: ChargeSessionRepository): V
             }
         }
     }
-//TODO: Validar entrada en front y back. Implementar lista de sesiones de carga.
 
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
