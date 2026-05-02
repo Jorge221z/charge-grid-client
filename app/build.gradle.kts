@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.secrets.gradle.plugin)
 }
 
 android {
@@ -54,6 +55,14 @@ android {
     }
 }
 
+secrets {
+    // Optionally specify a different file name containing your secrets.
+    // The plugin defaults to "local.properties"
+    propertiesFileName = "local.properties"
+
+    // Removed defaultPropertiesFileName to avoid build errors if the file is missing
+}
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -75,6 +84,11 @@ dependencies {
     // ViewModel support and viewModelScope
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Google Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
