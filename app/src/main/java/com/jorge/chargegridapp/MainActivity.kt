@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jorge.chargegridapp.chargesession.ChargeSessionViewModel
 import com.jorge.chargegridapp.station.StationViewModel
 import com.jorge.chargegridapp.station.ui.StationScreen
 import com.jorge.chargegridapp.ui.theme.ChargeGridTheme
@@ -16,7 +17,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChargeGridTheme {
                 StationScreen(
-                    viewModel = viewModel(factory = StationViewModel.Factory)
+                    viewModel = viewModel(factory = StationViewModel.Factory),
+                    sessionViewModel = viewModel(factory = ChargeSessionViewModel.Factory)
                 )
             }
         }

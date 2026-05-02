@@ -35,6 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jorge.chargegridapp.chargesession.ChargeSessionViewModel
+import com.jorge.chargegridapp.chargesession.network.dto.ChargeSessionResponse
+import com.jorge.chargegridapp.chargesession.network.dto.StartSessionRequest
 import com.jorge.chargegridapp.station.StationViewModel
 import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
 import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
@@ -44,9 +47,12 @@ import com.jorge.chargegridapp.station.network.dto.Status
 
 @Composable
 fun StationScreen(
-    viewModel: StationViewModel = viewModel()
+    viewModel: StationViewModel = viewModel(),
+    sessionViewModel: ChargeSessionViewModel = viewModel()
 ) {
+    // Observers
     val state by viewModel.uiState.collectAsState()
+    val sessionState by sessionViewModel.uiState.collectAsState()
 
     // Interceptor for physical Android back button
     BackHandler(enabled = state.stationDetail != null) {
@@ -65,6 +71,12 @@ fun StationScreen(
     } else {
         StationDetailContent(
             detail = state.stationDetail!!,
+
+            activeSession = sessionState.activeSession,
+            isSessionLoading = sessionState.isLoading,
+            onStartCharge = { request -> sessionViewModel.startSession(request) },
+            onStopCharge = { sessionViewModel.stopSession() },
+
             onBackClick = { viewModel.clearStationDetail() },
             onStatusUpdate = { newStatus ->
                 val request = StationStatusUpdateRequest(status = newStatus)
@@ -157,6 +169,10 @@ fun StationListContent(
 @Composable
 fun StationDetailContent(
     detail: StationDetailResponse,
+    activeSession: ChargeSessionResponse?,
+    isSessionLoading: Boolean,
+    onStartCharge: (StartSessionRequest) -> Unit,
+    onStopCharge: () -> Unit,
     onBackClick: () -> Unit,
     onStatusUpdate: (Status) -> Unit
 ) {
@@ -201,6 +217,28 @@ fun StationDetailContent(
                 Button(onClick = { onStatusUpdate(Status.MAINTENANCE) }) {
                     Text("Under Maintenance")
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (isSessionLoading) {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+            } else if (activeSession == null) {
+                Button(
+                    onClick = { onStartCharge(StartSessionRequest(stationId = detail.id)) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("Start Charging Session")
+                }
+            } else {
+                Button(
+                    onClick = onStopCharge,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text("Stop Charging Session")
+                }
+
+                Text("Session Started At: ${activeSession.startTime}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
