@@ -38,6 +38,10 @@ import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
 import com.jorge.chargegridapp.station.network.dto.StationResponse
 import com.jorge.chargegridapp.ui.maps.GlobalMapContent
 
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+
 @Composable
 fun StationListContent(
     stations: List<StationResponse>,
@@ -53,11 +57,25 @@ fun StationListContent(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         floatingActionButton = {
-            ChargeGridButton(
-                text = "New Station",
-                onClick = { showDialog = true },
-                modifier = Modifier.width(160.dp)
-            )
+            if (isMapView) {
+                // Circular, more "floating" FAB for Map view
+                FloatingActionButton(
+                    onClick = { showDialog = true },
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 8.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "New Station")
+                }
+            } else {
+                // Standard button for List view
+                ChargeGridButton(
+                    text = "New Station",
+                    onClick = { showDialog = true },
+                    modifier = Modifier.width(160.dp)
+                )
+            }
         }
     ) { paddingValues ->
         Column(
