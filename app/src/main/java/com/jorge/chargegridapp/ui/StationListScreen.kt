@@ -245,7 +245,8 @@ fun StationDetailContent(
             Spacer(modifier = Modifier.height(24.dp))
 
             val inProgressSession = detail.recentSessions.find { it.endTime == null }
-            val isSessionActive = activeSession != null || inProgressSession != null
+            val isCurrentStationSession = activeSession?.stationId == detail.id
+            val isSessionActive = isCurrentStationSession || inProgressSession != null
 
             if (isSessionLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
@@ -259,7 +260,7 @@ fun StationDetailContent(
             } else {
                 Button(
                     onClick = {
-                        val idToStop = activeSession?.id ?: inProgressSession?.id
+                        val idToStop = if (isCurrentStationSession) activeSession?.id else inProgressSession?.id
                         if (idToStop != null) {
                             onStopCharge(idToStop)
                         }
@@ -270,7 +271,7 @@ fun StationDetailContent(
                 }
 
                 // Avoid unnecessary CPU cycles
-                val startTime = activeSession?.startTime ?: inProgressSession?.startTime
+                val startTime = if (isCurrentStationSession) activeSession?.startTime else inProgressSession?.startTime
                 val formattedTime = remember(startTime) {
                     startTime?.formatToDisplay() ?: ""
                 }
