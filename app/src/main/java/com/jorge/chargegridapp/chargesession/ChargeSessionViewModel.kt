@@ -72,7 +72,7 @@ class ChargeSessionViewModel(private val repository: ChargeSessionRepository): V
             }
         }
     }
-
+//TODO: Validar entrada en front y back. Implementar lista de sesiones de carga.
 
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {

@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -37,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jorge.chargegridapp.chargesession.ChargeSessionViewModel
 import com.jorge.chargegridapp.chargesession.network.dto.ChargeSessionResponse
+import com.jorge.chargegridapp.chargesession.network.dto.ChargeSessionSummaryResponse
 import com.jorge.chargegridapp.chargesession.network.dto.StartSessionRequest
 import com.jorge.chargegridapp.station.StationViewModel
 import com.jorge.chargegridapp.station.network.dto.StationCreateRequest
@@ -44,6 +47,7 @@ import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
 import com.jorge.chargegridapp.station.network.dto.StationResponse
 import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
 import com.jorge.chargegridapp.station.network.dto.Status
+import com.jorge.chargegridapp.utils.formatToDisplay
 
 @Composable
 fun StationScreen(
@@ -182,6 +186,7 @@ fun StationDetailContent(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Button(onClick = onBackClick) {
                 Text("⬅ Go Back")
@@ -238,7 +243,24 @@ fun StationDetailContent(
                     Text("Stop Charging Session")
                 }
 
-                Text("Session Started At: ${activeSession.startTime}", style = MaterialTheme.typography.bodyMedium)
+                // Avoid unnecessary CPU cycles
+                val formattedTime = remember(activeSession.startTime) {
+                    activeSession.startTime.formatToDisplay()
+                }
+                Text("Session Started At: $formattedTime", style = MaterialTheme.typography.bodyMedium)
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+            Text(text = "Recent Sessions", style = MaterialTheme.typography.headlineSmall)
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+            if (detail.recentSessions.isEmpty()) {
+                Text("No charging history yet.", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                // Loop through the sessions (Just like a .map() in React!)
+                detail.recentSessions.forEach { session ->
+                    SessionHistoryCard(session)
+                }
             }
         }
     }
@@ -276,6 +298,26 @@ fun StationCard(name: String, status: String, onClick: () -> Unit) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = name, style = MaterialTheme.typography.titleLarge)
             Text(text = "Status: $status", style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+@Composable
+fun SessionHistoryCard(session: ChargeSessionSummaryResponse) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = "Session ID: ${session.id}", style = MaterialTheme.typography.titleMedium)
+            Text(text = "Start: ${session.startTime.formatToDisplay()}", style = MaterialTheme.typography.bodyMedium)
+            if (session.endTime != null) {
+                Text(text = "End: ${session.endTime.formatToDisplay()}", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(text = "In Progress", style = MaterialTheme.typography.bodyMedium)
+            }
+            Text(text = "Energy Consumed: ${session.kwhConsumed} kWh", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
