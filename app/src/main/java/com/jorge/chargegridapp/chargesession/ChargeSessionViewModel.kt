@@ -78,9 +78,9 @@ class ChargeSessionViewModel(private val repository: ChargeSessionRepository): V
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val api = RetrofitClient.stationApi
-                val repository = StationRepository(api)
-                return StationViewModel(repository) as T
+                val api = RetrofitClient.chargeSessionApi
+                val repository = ChargeSessionRepository(api)
+                return ChargeSessionViewModel(repository) as T
             }
         }
     }
