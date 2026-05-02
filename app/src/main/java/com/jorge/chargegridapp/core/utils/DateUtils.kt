@@ -1,4 +1,4 @@
-package com.jorge.chargegridapp.utils
+package com.jorge.chargegridapp.core.network.utils
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

@@ -1,4 +1,4 @@
-package com.jorge.chargegridapp.station.ui
+package com.jorge.chargegridapp.ui
 
 import androidx.compose.material3.AlertDialog
 import androidx.activity.compose.BackHandler
@@ -48,7 +48,7 @@ import com.jorge.chargegridapp.station.network.dto.StationDetailResponse
 import com.jorge.chargegridapp.station.network.dto.StationResponse
 import com.jorge.chargegridapp.station.network.dto.StationStatusUpdateRequest
 import com.jorge.chargegridapp.station.network.dto.Status
-import com.jorge.chargegridapp.utils.formatToDisplay
+import com.jorge.chargegridapp.core.network.utils.formatToDisplay
 
 @Composable
 fun StationScreen(

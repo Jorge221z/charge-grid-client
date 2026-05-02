@@ -1,4 +1,4 @@
-package com.jorge.chargegridapp.ui.theme
+package com.jorge.chargegridapp.core.ui.screens.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

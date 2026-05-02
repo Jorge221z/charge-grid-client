@@ -1,6 +1,5 @@
-package com.jorge.chargegridapp.ui.theme
+package com.jorge.chargegridapp.core.ui.screens.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

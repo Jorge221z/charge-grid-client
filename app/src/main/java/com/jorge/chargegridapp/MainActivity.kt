@@ -7,8 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jorge.chargegridapp.chargesession.ChargeSessionViewModel
 import com.jorge.chargegridapp.station.StationViewModel
-import com.jorge.chargegridapp.station.ui.StationScreen
-import com.jorge.chargegridapp.ui.theme.ChargeGridTheme
+import com.jorge.chargegridapp.ui.StationScreen
+import com.jorge.chargegridapp.core.ui.screens.theme.ChargeGridTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -5,6 +5,7 @@ import com.jorge.chargegridapp.chargesession.network.ChargeSessionApi
 import com.jorge.chargegridapp.station.network.StationApi
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -20,7 +21,7 @@ object RetrofitClient {
     }
 
     // Attach the logging interceptor to OkHttpClient
-    private val okHttpClient = okhttp3.OkHttpClient.Builder()
+    private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .build()
 

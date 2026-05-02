@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import com.jorge.chargegridapp.chargesession.network.dto.ChargeSessionResponse
 import com.jorge.chargegridapp.chargesession.network.dto.StartSessionRequest
 import com.jorge.chargegridapp.core.network.RetrofitClient
-import com.jorge.chargegridapp.station.StationRepository
-import com.jorge.chargegridapp.station.StationViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
