@@ -42,6 +42,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 
+import androidx.compose.foundation.combinedClickable
+import com.jorge.chargegridapp.ui.components.DeveloperMenu
+import com.jorge.chargegridapp.ui.components.ModernErrorDialog
+
 @Composable
 fun StationListContent(
     stations: List<StationResponse>,
@@ -53,6 +57,7 @@ fun StationListContent(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var isMapView by remember { mutableStateOf(false) }
+    var showDeveloperMenu by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -94,7 +99,11 @@ fun StationListContent(
                 Text(
                     text = "Stations",
                     style = MaterialTheme.typography.displayLarge,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.combinedClickable(
+                        onClick = { /* normal click */ },
+                        onLongClick = { showDeveloperMenu = true }
+                    )
                 )
                 
                 IconButton(
@@ -159,5 +168,9 @@ fun StationListContent(
             },
             onDismiss = { showDialog = false }
         )
+    }
+
+    if (showDeveloperMenu) {
+        DeveloperMenu(onDismiss = { showDeveloperMenu = false })
     }
 }
